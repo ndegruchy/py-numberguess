@@ -20,11 +20,31 @@ import argparse
 from datetime import datetime as date
 from pathlib import Path
 
-scoreboard = Path(os.environ["XDG_DATA_HOME"] + "/guessing-game/scores.txt")
+if "XDG_DATA_HOME" in os.environ:
+    scoreboard = Path(os.environ["XDG_DATA_HOME"] + "/guessing-game/scores.txt")
+    if not Path(os.environ["XDG_DATA_HOME"] + "guessing-game").exists():
+        os.mkdir(os.environ["XDG_DATA_HOME"] + "/guessing-game/")
+        Path(scoreboard).touch()
+elif "LOCALAPPDATA" in os.environ:
+    scoreboard = Path(os.environ["LOCALAPPDATA"] + "\\guessing-game\\scores.txt")
+    if not Path(os.environ["LOCALAPPDATA"] + "\\guessing-game\\").exists():
+        os.mkdir(os.environ["LOCALAPPDATA"] + "\\guessing-game\\")
+        Path(scoreboard).touch()
+else:
+    scoreboard = Path(os.environ["HOME"] + ".guessing-game-scores")
+    if not Path(scoreboard).exists():
+        Path(scoreboard).touch()
+
+
 guesses = []
 
 
 def collect_guess(guess):
+    """Adds a guess to the list of guesses
+
+    Args:
+        guess (int): the guess to add to the list
+    """
     guesses.append(guess)
 
 
@@ -41,8 +61,9 @@ def check_guess(number=0, actual=100, attempts=1):
     if number == actual:
         print("Wow! That was the right answer!")
         print("It took %d guesses to find that answer" % attempts)
-        scores.write("%s: User guessed the right number (%d) in %d guesses. Guesed %s\n" % (date.now(), answer, attempts, ', '.join(map(str, guesses))))
-        
+        scores.write("%s: User guessed the right number (%d) in %d guesses. Guesed %s\n"\
+             % (date.now(), answer, attempts, ', '.join(map(str, guesses))))
+
         return True
 
     elif number > actual:
@@ -89,7 +110,8 @@ try:
     if scoreboard.exists:
         with scoreboard.open("a+") as scores:
 
-            print("I'm thinking of a number between %d and %d, can you guess it?" % (args.min, args.max))
+            print("I'm thinking of a number between %d and %d, can you guess it?"\
+                % (args.min, args.max))
             print("I'll give you %d guesses." % args.guesses)
 
             for attempt in range(1, (args.guesses + 1)):
@@ -103,11 +125,11 @@ try:
                 elif attempt == args.guesses:
                     # No more guesses!
                     print("You're out of guesses! The answer was %d." % answer)
-                    scores.write("%s: User failed to guess the number (%d) in %d guesses. Guessed: %s\n" % (date.now(), answer, args.guesses, ', '.join(map(str, guesses))))
+                    scores.write("%s: User failed to guess the number (%d) in %d guesses. Guessed: %s\n"\
+                         % (date.now(), answer, args.guesses, ', '.join(map(str, guesses))))
                 else:
                     # Skip to next guess
                     print("You now have %d guess(es) remaining." % (args.guesses - attempt))
-                    pass
 
                 collect_guess(guess)
 
