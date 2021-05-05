@@ -20,21 +20,14 @@ import argparse
 from datetime import datetime as date
 from pathlib import Path
 
-if "XDG_DATA_HOME" in os.environ:
-    scoreboard = Path(os.environ["XDG_DATA_HOME"] + "/guessing-game/scores.txt")
-    if not Path(os.environ["XDG_DATA_HOME"] + "guessing-game").exists():
-        os.mkdir(os.environ["XDG_DATA_HOME"] + "/guessing-game/")
-        Path(scoreboard).touch()
-elif "LOCALAPPDATA" in os.environ:
-    scoreboard = Path(os.environ["LOCALAPPDATA"] + "\\guessing-game\\scores.txt")
-    if not Path(os.environ["LOCALAPPDATA"] + "\\guessing-game\\").exists():
-        os.mkdir(os.environ["LOCALAPPDATA"] + "\\guessing-game\\")
-        Path(scoreboard).touch()
-else:
-    scoreboard = Path(os.environ["HOME"] + ".guessing-game-scores")
-    if not Path(scoreboard).exists():
-        Path(scoreboard).touch()
+SCORESFILE = "/guessing-game/scores.txt"
 
+if "XDG_DATA_DIR" in os.environ:
+    scoreboard = Path(os.environ["XDG_DATA_DIR"] + SCORESFILE)
+elif "LOCALAPPDATA" in os.environ:
+    scoreboard = Path(os.environ["LOCALAPPDATA"] + SCORESFILE)
+else:
+    scoreboard = Path.home() + "guessing-game-scores.txt"
 
 guesses = []
 
